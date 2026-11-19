@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Birthday Wheel</title>
+<title>Праздничная долина</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#11151b;color:#e5eaf1;font:15px Arial,sans-serif}
@@ -37,23 +36,139 @@ button{margin-top:14px;background:transparent;border:1px solid #66778d;color:#e5
 button:hover{background:#303b49}
 .duplicate{font-size:12px;color:#b8c9dc;margin-bottom:12px}
 @media(max-width:500px){.center{width:42%;height:42%}.season{font-size:10px}.profile{grid-template-columns:minmax(0,1fr) 75px}.photo{width:75px;height:110px}}
+
+
+
+body {
+  background: transparent;
+  min-height: 100vh;
+}
+header, main {
+  position: relative;
+  z-index: 1;
+}
+
+/*СТЕКЛЯННЫЕ ПАНЕЛИ*/
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  position: relative;
+  background: rgba(20, 27, 37, .65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(220,235,255,.15);
+}
+.wheel {
+  padding: 12px;
+  background: rgba(22, 30, 42, .38);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(220,235,255,.13);
+}
+.center {
+  background: rgba(25, 34, 47, .78);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(220,235,255,.2);
+}
+#tooltip {
+  background: rgba(31, 41, 54, .91);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(220,235,255,.25);
+}
+
+/*КНОПКА ФОНА*/
+.theme-toggle {
+  margin: 0;
+  flex-shrink: 0;
+  padding: 9px 14px;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(220,235,255,.25);
+  color: #e5eaf1;
+  font-size: 12px;
+  transition: background .2s;
+}
+.theme-toggle:hover {
+  background: rgba(255,255,255,.17);
+}
+@media(max-width:500px) {
+  header {
+    padding: 14px;
+  }
+  .theme-toggle {
+    padding: 8px;
+    font-size: 11px;
+  }
+  .wheel {
+    padding: 3px;
+  }
+}
+
+
+/*ФОНОВОЕ ВИДЕО И EMBED*/
+#background {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  background-color: #11151b;
+}
+
+#background iframe,
+#background video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100vw;
+  height: 100vh;
+  min-width: 177.78vh;
+  min-height: 56.25vw;
+  transform: translate(-50%, -50%);
+  border: 0;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+#background-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: rgba(8, 12, 19, .58);
+  pointer-events: none;
+}
+
+
 </style>
 </head>
 <body>
+    
+<div id="background"></div>
+<div id="background-overlay"></div>
+
 <header>
-<h1>КРУГ ДНЕЙ РОЖДЕНИЯ</h1>
-<div id="status">Загрузка...</div>
+  <div>
+    <h1>Праздничная долина</h1>
+    <div id="status">Загрузка...</div>
+  </div>
+
+  <button id="backgroundToggle" class="theme-toggle">
+    Отключить фон
+  </button>
 </header>
+
 <main>
 <div class="wheel">
 <svg viewBox="0 0 600 600">
 <circle cx="300" cy="300" r="245" fill="none" stroke="#303b48"/>
 <circle cx="300" cy="300" r="205" fill="none" stroke="#303b48"/>
 <g id="divisions"></g>
-<text class="season" x="300" y="37" text-anchor="middle">ЗИМА</text>
-<text class="season" x="565" y="304" text-anchor="end">ОСЕНЬ</text>
-<text class="season" x="300" y="578" text-anchor="middle">ЛЕТО</text>
-<text class="season" x="35" y="304">ВЕСНА</text>
+<text class="season" x="300" y="30" text-anchor="middle">ЗИМА</text>
+<text class="season" x="596" y="304" text-anchor="end">ОСЕНЬ</text>
+<text class="season" x="300" y="592" text-anchor="middle">ЛЕТО</text>
+<text class="season" x="4" y="304">ВЕСНА</text>
 <g id="markers"></g>
 </svg>
 <div class="center">
@@ -80,18 +195,38 @@ const divisions=document.getElementById("divisions");
 
 const months=["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
 
-function parseDate(v){
- if(typeof v==="number"){
-  let d=new Date(Date.UTC(1899,11,30)+v*86400000);
-  return {day:d.getUTCDate(),month:d.getUTCMonth()+1};
- }
- let s=String(v||"").trim();
- let m=s.match(/^(\d{1,2})[.\/-](\d{1,2})(?:[.\/-]\d{2,4})?$/);
- if(m)return {day:+m[1],month:+m[2]};
- m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
- if(m)return {day:+m[3],month:+m[2]};
- return null;
+
+function parseDate(value, formatted) {
+  const v = String(value ?? "").trim();
+  const f = String(formatted ?? "").trim();
+
+  // Date(_,_,_)
+  let m = v.match(/^Date\((\d{4}),(\d{1,2}),(\d{1,2})\)$/);
+  if (m) {
+    return { day: +m[3], month: +m[2] + 1 };
+  }
+
+  // yyyy-mm-dd
+  m = v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return { day: +m[3], month: +m[2] };
+
+  // dd.mm.yyyy
+  m = (f || v).match(/^(\d{1,2})\.(\d{1,2})(?:\.(\d{2,4}))?$/);
+  if (m) return { day: +m[1], month: +m[2] };
+
+  // dd/mm/yyyy
+  m = (f || v).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) return { day: +m[1], month: +m[2] };
+
+  // Google Sheets serial number
+  if (typeof value === "number") {
+    const d = new Date(Date.UTC(1899, 11, 30) + value * 86400000);
+    return { day: d.getUTCDate(), month: d.getUTCMonth() + 1 };
+  }
+
+  return null;
 }
+
 function valid(d){
  return d&&d.month>=1&&d.month<=12&&d.day>=1&&d.day<=new Date(2024,d.month,0).getDate();
 }
@@ -173,7 +308,10 @@ function checkHide(){
  }
 }
 function timer(){
- if(!people.length)return;
+ if (!people.length) {
+  document.getElementById("timer").textContent = "--";
+  document.getElementById("timerName").textContent = "Нет данных";
+  return; }
  let now=new Date();
  let next=people.map(p=>{
   let y=now.getFullYear();
@@ -188,39 +326,269 @@ function timer(){
  document.getElementById("timer").textContent=days?`${days} дн. ${hours} ч.`:`${hours} ч. ${mins} мин.`;
  document.getElementById("timerName").textContent=next.p.name;
 }
-async function load(){
- if(SHEET_ID==="1H8JM7nr8f2moRBVroHakqZWCOwkbq6OrREMwL8Pathk"){
-  document.getElementById("status").textContent="1H8JM7nr8f2moRBVroHakqZWCOwkbq6OrREMwL8Pathk";
-  return;
- }
- try{
-  let url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${SHEET_GID}&tqx=out:json`;
-  let response=await fetch(url);
-  if(!response.ok)throw Error("Ошибка доступа");
-  let raw=await response.text();
-  let match=raw.match(/setResponse\(([\s\S]*)\);?$/);
-  if(!match)throw Error("Неверный формат");
-  let json=JSON.parse(match[1]);
-  people=json.table.rows.map(row=>{
-   let c=row.c||[];
-   return {
-    name:c[0]?.v??"",
-    date:parseDate(c[1]?.f??c[1]?.v),
-    image:c[2]?.v??"",
-    interests:c[3]?.v??""
-   };
-  }).filter(p=>String(p.name).trim()&&valid(p.date));
-  draw();timer();
-  document.getElementById("status").textContent=`Именинников: ${people.length} · Обновлено ${new Date().toLocaleTimeString()}`;
- }catch(e){
-  document.getElementById("status").textContent="Ошибка загрузки. Проверь доступ к таблице.";
-  console.error(e);
- }
+
+async function load() {
+  const status = document.getElementById("status");
+  status.textContent = "Подключение к Google Таблице...";
+
+  try {
+    const url =
+      `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq` +
+      `?tqx=out:json&gid=${SHEET_GID}`;
+
+    const response = await fetch(url, {
+      cache: "no-store"
+    });
+    if (!response.ok) {
+      throw new Error("Google Sheets: HTTP " + response.status);
+    }
+    const raw = await response.text();
+    const match = raw.match(
+      /google\.visualization\.Query\.setResponse\(([\s\S]*?)\);?\s*$/
+    );
+    if (!match) {
+      throw new Error("Не удалось прочитать ответ Google. Проверь доступ.");
+    }
+    const json = JSON.parse(match[1]);
+    if (json.status === "error") {
+      throw new Error("Google вернул ошибку при чтении таблицы");
+    }
+    const loaded = [];
+
+    (json.table.rows || []).forEach((row, index) => {
+      const c = row.c || [];
+
+      const name = String(c[0]?.v ?? "").trim();
+      const date = parseDate(c[1]?.v, c[1]?.f);
+      const image = String(c[2]?.v ?? "").trim();
+      const interests = String(c[3]?.v ?? "").trim();
+
+      if (!name || !valid(date)) {
+        console.warn("Пропущена строка:", index + 2);
+        return;
+      }
+      loaded.push({
+        name,
+        date,
+        image,
+        interests
+      });
+    });
+
+    people = loaded;
+
+    draw();
+    timer();
+
+    status.textContent =
+      `Именинников: ${people.length} · Обновлено: ` +
+      new Date().toLocaleTimeString("ru-RU");
+
+    console.log("Загруженные дни рождения:", people);
+
+  } catch (error) {
+    status.textContent = "Ошибка: " + error.message;
+    console.error(error);
+  }
 }
+
+
+// НАСТРОЙКИ ФОНОВ
+// type:
+// "image" - прямая ссылка на GIF/JPG/PNG/WebP
+// "video" - прямая ссылка на MP4/WebM
+// "embed" - iframe-код или URL для iframe
+
+const BACKGROUNDS = [
+
+  // Прямая на GIF
+  {
+    type: "image",
+    url: "https://media.giphy.com/media/example/giphy.gif"
+  },
+
+  // Giphy Embed
+  {
+    type: "embed",
+    url: "https://giphy.com/embed/ВАШ_ID"
+  },
+  {
+    type: "embed",
+    url: '<iframe src="https://giphy.com/embed/nhUrXuZ5gY30DcomWF" width="480" height="480"></iframe>'
+  },
+  {
+    type: "embed",
+    url: '<iframe src="https://giphy.com/embed/MpJJ7gWng24bjxrMiK" width="480" height="480"></iframe>'
+  },
+  {
+    type: "embed",
+    url: '<iframe src="https://giphy.com/embed/zc7zLFsvGIXlu" width="480" height="480"></iframe>'
+  },
+  {
+    type: "embed",
+    url: '<iframe src="https://giphy.com/embed/mnIjWW97Jn9mg" width="480" height="480"></iframe>'
+  },
+  {
+    type: "embed",
+    url: '<iframe src="https://giphy.com/embed/3s8pHxxjx6biU" width="480" height="480"></iframe>'
+  },
+  {
+    type: "embed",
+    url: '<iframe src="https://giphy.com/embed/YxA2PPkXbwRTa" width="480" height="480"></iframe>'
+  },
+  {
+    type: "embed",
+    url: '<iframe src="https://giphy.com/embed/3ohzdKIGdelMSY4QQU" width="480" height="480"></iframe>'
+  },
+  {
+    type: "embed",
+    url: '<iframe src="https://giphy.com/embed/SAC0wTRQYO2Y0" width="480" height="480"></iframe>'
+  },
+
+  // YouTube Embed
+  {
+    type: "embed",
+    url: "https://www.youtube.com/embed/ВАШ_ID?autoplay=1&mute=1&loop=1&playlist=ВАШ_ID"
+  },
+
+  // Прямое видео MP4
+  {
+    type: "video",
+    url: "https://example.com/background.mp4"
+  },
+
+  // Еще один GIF
+  {
+    type: "image",
+    url: "https://example.com/background.gif"
+  }
+
+];
+
+const background = document.getElementById("background");
+const backgroundToggle = document.getElementById("backgroundToggle");
+
+let gifEnabled =
+  localStorage.getItem("birthdayGifEnabled") !== "false";
+
+// Очистка предыдущего фона
+function clearBackground() {
+  background.innerHTML = "";
+  background.style.backgroundImage = "none";
+}
+
+// Установка фона
+function setBackground() {
+
+  clearBackground();
+
+  if (!gifEnabled) {
+    document.getElementById("background-overlay").style.background =
+      "rgba(8, 12, 19, .96)";
+
+    backgroundToggle.textContent = "Включить фон";
+    return;
+  }
+
+  const available = BACKGROUNDS.filter(item =>
+    item &&
+    item.url &&
+    !item.url.includes("ВАШ_ID") &&
+    !item.url.includes("example.com")
+  );
+
+  if (!available.length) {
+    backgroundToggle.textContent = "Включить фон";
+    return;
+  }
+
+  const selected =
+    available[Math.floor(Math.random() * available.length)];
+
+  // ПРЯМОЕ ИЗОБРАЖЕНИЕ
+  if (selected.type === "image") {
+
+    const img = document.createElement("img");
+
+    img.src = selected.url;
+    img.alt = "";
+    img.style.cssText = `
+      position:absolute;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    `;
+
+    background.appendChild(img);
+
+    img.onerror = () => {
+      clearBackground();
+      console.error("Не удалось загрузить изображение:", selected.url);
+    };
+  }
+
+  // ВИДЕО
+  else if (selected.type === "video") {
+    const video = document.createElement("video");
+    video.src = selected.url;
+    video.autoplay = true;
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    background.appendChild(video);
+    video.play().catch(console.warn);
+  }
+
+  // EMBED
+  else if (selected.type === "embed") {
+    let embedUrl = selected.url;
+    // Если вставлен полный iframe-код, извлекаем из него src
+    if (embedUrl.includes("<iframe")) {
+      const doc = new DOMParser().parseFromString(
+        embedUrl,
+        "text/html"
+      );
+      embedUrl = doc.querySelector("iframe")?.getAttribute("src");
+    }
+
+    if (!embedUrl) {
+      console.error("Некорректный Embed");
+      return;
+    }
+
+    const iframe = document.createElement("iframe");
+    iframe.src = embedUrl;
+    iframe.allow = "autoplay; fullscreen";
+    iframe.setAttribute("allowfullscreen", "");
+    iframe.setAttribute("loading", "eager");
+    iframe.setAttribute("title", "Фоновая анимация");
+    background.appendChild(iframe);
+  }
+
+  document.getElementById("background-overlay").style.background =
+    "rgba(8, 12, 19, .58)";
+
+  backgroundToggle.textContent = "Отключить фон";
+}
+
+// Кнопка переключения
+backgroundToggle.addEventListener("click", () => {
+  gifEnabled = !gifEnabled;
+  localStorage.setItem(
+    "birthdayGifEnabled",
+    String(gifEnabled)
+  );
+  setBackground();
+});
+
+// Инициализация
+setBackground();
+
 draw();
 load();
-setInterval(load,REFRESH);
-setInterval(timer,1000);
+
+setInterval(load, REFRESH);
+setInterval(timer, 1000);
 </script>
 </body>
 </html>
