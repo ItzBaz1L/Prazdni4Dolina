@@ -1,0 +1,226 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Birthday Wheel</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#11151b;color:#e5eaf1;font:15px Arial,sans-serif}
+header{padding:18px 25px;border-bottom:1px solid #303844}
+h1{font-size:19px;font-weight:500;margin:0}
+#status{font-size:12px;color:#8995a5;margin-top:7px}
+main{display:grid;place-items:center;padding:20px}
+.wheel{width:min(700px,95vw);position:relative;aspect-ratio:1}
+svg{width:100%;height:100%}
+.season{fill:#aeb9c8;font-size:13px;letter-spacing:2px}
+.center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:36%;height:36%;background:#1b222c;border:1px solid #394553;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:12px}
+.center small{color:#929eae;font-size:10px;letter-spacing:1px}
+#timer{font-size:clamp(17px,3vw,27px);margin:12px 0;font-variant-numeric:tabular-nums}
+#timerName{font-size:13px;color:#b9c8d9}
+.marker{cursor:pointer;stroke:#11151b;stroke-width:2}
+.marker:hover{filter:drop-shadow(0 0 7px white)}
+.line{stroke:#536071;opacity:.45}
+#tooltip{position:fixed;display:none;z-index:20;width:min(420px,calc(100vw - 20px));padding:16px;background:#202833;border:1px solid #536276;box-shadow:0 12px 35px #000b}
+#tooltip.visible{display:block}
+.people{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.person+.person{border-left:1px solid #485565;padding-left:15px}
+.person h2{font-size:17px;font-weight:500;margin:0 0 12px}
+.profile{display:grid;grid-template-columns:minmax(0,1fr) 105px;gap:12px}
+.date{padding-bottom:10px;border-bottom:1px solid #485565;color:#b8c9dc}
+.interests{margin-top:12px;padding:10px;background:#171e27;border-left:2px solid #91a8c5}
+.interests small{display:block;color:#9aaabd;font-size:10px;letter-spacing:1px;margin-bottom:7px}
+.interests div{font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+.photo{width:105px;height:135px;object-fit:cover;background:#303946}
+button{margin-top:14px;background:transparent;border:1px solid #66778d;color:#e5eaf1;padding:8px 12px;cursor:pointer}
+button:hover{background:#303b49}
+.duplicate{font-size:12px;color:#b8c9dc;margin-bottom:12px}
+@media(max-width:500px){.center{width:42%;height:42%}.season{font-size:10px}.profile{grid-template-columns:minmax(0,1fr) 75px}.photo{width:75px;height:110px}}
+</style>
+</head>
+<body>
+<header>
+<h1>КРУГ ДНЕЙ РОЖДЕНИЯ</h1>
+<div id="status">Загрузка...</div>
+</header>
+<main>
+<div class="wheel">
+<svg viewBox="0 0 600 600">
+<circle cx="300" cy="300" r="245" fill="none" stroke="#303b48"/>
+<circle cx="300" cy="300" r="205" fill="none" stroke="#303b48"/>
+<g id="divisions"></g>
+<text class="season" x="300" y="37" text-anchor="middle">ЗИМА</text>
+<text class="season" x="565" y="304" text-anchor="end">ОСЕНЬ</text>
+<text class="season" x="300" y="578" text-anchor="middle">ЛЕТО</text>
+<text class="season" x="35" y="304">ВЕСНА</text>
+<g id="markers"></g>
+</svg>
+<div class="center">
+<small>БЛИЖАЙШИЙ ДЕНЬ РОЖДЕНИЯ</small>
+<div id="timer">--</div>
+<div id="timerName">Загрузка...</div>
+</div>
+</div>
+</main>
+<div id="tooltip"></div>
+<script>
+const SHEET_ID="1H8JM7nr8f2moRBVroHakqZWCOwkbq6OrREMwL8Pathk";
+const SHEET_GID="0";
+const REFRESH=300000;
+
+let people=[];
+let pinned=[];
+let active=null;
+let hovered=false;
+const NS="http://www.w3.org/2000/svg";
+const tooltip=document.getElementById("tooltip");
+const markers=document.getElementById("markers");
+const divisions=document.getElementById("divisions");
+
+const months=["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+
+function parseDate(v){
+ if(typeof v==="number"){
+  let d=new Date(Date.UTC(1899,11,30)+v*86400000);
+  return {day:d.getUTCDate(),month:d.getUTCMonth()+1};
+ }
+ let s=String(v||"").trim();
+ let m=s.match(/^(\d{1,2})[.\/-](\d{1,2})(?:[.\/-]\d{2,4})?$/);
+ if(m)return {day:+m[1],month:+m[2]};
+ m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+ if(m)return {day:+m[3],month:+m[2]};
+ return null;
+}
+function valid(d){
+ return d&&d.month>=1&&d.month<=12&&d.day>=1&&d.day<=new Date(2024,d.month,0).getDate();
+}
+function key(d){return d.month+"-"+d.day}
+function angle(d){
+ let n=(Date.UTC(2024,d.month-1,d.day)-Date.UTC(2024,0,1))/86400000;
+ return -Math.PI/2-n/366*Math.PI*2;
+}
+function color(s){
+ let h=0;
+ for(let c of s)h=(h*31+c.charCodeAt(0))>>>0;
+ return ["#e5a16f","#8eb9df","#c19ad9","#8dc3a5","#e1b77b","#dc8c9a","#83c9ca","#c3b58b"][h%8];
+}
+function point(d){
+ let a=angle(d);
+ return {x:300+225*Math.cos(a),y:300+225*Math.sin(a)};
+}
+function draw(){
+ divisions.innerHTML="";
+ for(let i=0;i<12;i++){
+  let a=-Math.PI/2-i*Math.PI/6;
+  let l=document.createElementNS(NS,"line");
+  l.setAttribute("x1",300+205*Math.cos(a));
+  l.setAttribute("y1",300+205*Math.sin(a));
+  l.setAttribute("x2",300+245*Math.cos(a));
+  l.setAttribute("y2",300+245*Math.sin(a));
+  l.setAttribute("class","line");
+  divisions.append(l);
+ }
+ markers.innerHTML="";
+ let groups={};
+ people.forEach(p=>(groups[key(p.date)]??=[]).push(p));
+ Object.entries(groups).forEach(([k,g])=>{
+  let p=point(g[0].date);
+  let c=document.createElementNS(NS,"circle");
+  c.setAttribute("cx",p.x);c.setAttribute("cy",p.y);
+  c.setAttribute("r",6);c.setAttribute("fill",color(g.map(x=>x.name).join("|")));
+  c.setAttribute("class","marker");
+  c.addEventListener("mouseenter",()=>show(k,c));
+  c.addEventListener("mouseleave",()=>{hovered=false;setTimeout(checkHide,150)});
+  c.addEventListener("click",()=>show(k,c));
+  markers.append(c);
+ });
+}
+function esc(s){
+ return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function personHTML(p){
+ return `<div class="person"><div class="profile"><div>
+ <h2>${esc(p.name)}</h2>
+ <div class="date">${p.date.day} ${months[p.date.month-1]}</div>
+ <div class="interests"><small>ИНТЕРЕСЫ</small><div>${esc(p.interests||"Не указаны")}</div></div>
+ </div>${p.image?`<img class="photo" src="${esc(p.image)}" alt="" onerror="this.style.display='none'">`:`<div class="photo"></div>`}
+ </div></div>`;
+}
+function show(k,el){
+ active=k;hovered=true;
+ let group=people.filter(p=>key(p.date)===k);
+ tooltip.innerHTML=(group.length>1?`<div class="duplicate">В этот день родились ${group.length} приколыша</div>`:"")+
+ `<div class="people">${group.map(personHTML).join("")}</div>
+ <button id="pin">${pinned.includes(k)?"Открепить":"Закрепить карточку"}</button>`;
+ tooltip.classList.add("visible");
+ document.getElementById("pin").onclick=()=>togglePin(k);
+ let r=el.getBoundingClientRect();
+ let w=tooltip.offsetWidth,h=tooltip.offsetHeight;
+ tooltip.style.left=Math.max(8,Math.min(innerWidth-w-8,r.right+10))+"px";
+ tooltip.style.top=Math.max(8,Math.min(innerHeight-h-8,r.top))+"px";
+}
+function togglePin(k){
+ if(pinned.includes(k))pinned=pinned.filter(x=>x!==k);
+ else if(pinned.length<2)pinned.push(k);
+ show(k,markers.querySelector(`[cx="${point(people.find(p=>key(p.date)===k).date).x}"]`));
+}
+tooltip.addEventListener("mouseenter",()=>hovered=true);
+tooltip.addEventListener("mouseleave",()=>{hovered=false;checkHide()});
+function checkHide(){
+ if(!hovered&&active&&!pinned.includes(active)){
+  tooltip.classList.remove("visible");active=null;
+ }
+}
+function timer(){
+ if(!people.length)return;
+ let now=new Date();
+ let next=people.map(p=>{
+  let y=now.getFullYear();
+  let d=new Date(y,p.date.month-1,p.date.day);
+  if(d<=now)d=new Date(y+1,p.date.month-1,p.date.day);
+  return {p,d};
+ }).sort((a,b)=>a.d-b.d)[0];
+ let diff=next.d-now;
+ let days=Math.floor(diff/86400000);
+ let hours=Math.floor(diff%86400000/3600000);
+ let mins=Math.floor(diff%3600000/60000);
+ document.getElementById("timer").textContent=days?`${days} дн. ${hours} ч.`:`${hours} ч. ${mins} мин.`;
+ document.getElementById("timerName").textContent=next.p.name;
+}
+async function load(){
+ if(SHEET_ID==="1H8JM7nr8f2moRBVroHakqZWCOwkbq6OrREMwL8Pathk"){
+  document.getElementById("status").textContent="1H8JM7nr8f2moRBVroHakqZWCOwkbq6OrREMwL8Pathk";
+  return;
+ }
+ try{
+  let url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${SHEET_GID}&tqx=out:json`;
+  let response=await fetch(url);
+  if(!response.ok)throw Error("Ошибка доступа");
+  let raw=await response.text();
+  let match=raw.match(/setResponse\(([\s\S]*)\);?$/);
+  if(!match)throw Error("Неверный формат");
+  let json=JSON.parse(match[1]);
+  people=json.table.rows.map(row=>{
+   let c=row.c||[];
+   return {
+    name:c[0]?.v??"",
+    date:parseDate(c[1]?.f??c[1]?.v),
+    image:c[2]?.v??"",
+    interests:c[3]?.v??""
+   };
+  }).filter(p=>String(p.name).trim()&&valid(p.date));
+  draw();timer();
+  document.getElementById("status").textContent=`Именинников: ${people.length} · Обновлено ${new Date().toLocaleTimeString()}`;
+ }catch(e){
+  document.getElementById("status").textContent="Ошибка загрузки. Проверь доступ к таблице.";
+  console.error(e);
+ }
+}
+draw();
+load();
+setInterval(load,REFRESH);
+setInterval(timer,1000);
+</script>
+</body>
+</html>
