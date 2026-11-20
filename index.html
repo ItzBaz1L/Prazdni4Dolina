@@ -1179,9 +1179,6 @@ backgroundToggle.addEventListener("click", () => {
   setBackground();
 });
 
-// Инициализация
-setBackground();
-
 draw();
 drawTodayMarker();
 load();
@@ -1189,6 +1186,13 @@ load();
 setInterval(load, REFRESH);
 setInterval(timer, 1000);
 setInterval(drawTodayMarker, 1000);
+
+//запускаем фон отдельно
+try {
+  setBackground();
+} catch (error) {
+  console.error("ОШИБКА ФОНА:", error);
+}
 </script>
 </body>
 </html>
