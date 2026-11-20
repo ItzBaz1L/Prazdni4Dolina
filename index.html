@@ -229,11 +229,14 @@ main {
 
 /* Названия времён года */
 .season {
-  fill: #b6aec8;
+  fill: #c8bfdc;
   font-size: 13px;
+  font-weight: 500;
   letter-spacing: 1px;
   pointer-events: none;
-  text-anchor: middle;}
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
 
 /* Центральная круглая подложка */
 .center {
@@ -350,12 +353,46 @@ main {
     padding: 7px;  }
   .season {
     font-size: 10px;
-    letter-spacing: 1px;  }}
+    letter-spacing: .5px;  }
+  #tooltip {
+    max-height: 85vh;
+    overflow-y: auto;  }
+  #tooltip::before {
+    padding: 5px 0 14px;}}
 
-/* Очень низкие экраны */
 @media (max-height: 600px) {
   .wheel {
-    width: min(76vw, calc(100svh - var(--header-height) - 20px));  }}
+    width: min(76vw, calc(100svh - var(--header-height) - 20px));  }
+  #tooltip {
+    max-height: 85vh;
+    overflow-y: auto;  }
+  #tooltip::before {
+    padding: 5px 0 14px;}}
+
+/* ПЕРЕМЕЩАЕМАЯ КАРТОЧКА */
+#tooltip {
+  cursor: default;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+/* Полоса */
+#tooltip::before {
+  content: "⠿  Переместить карточку";
+  display: block;
+  text-align: center;
+  color: #bbafe49d;
+  font-size: 11px;
+  letter-spacing: 1px;
+  padding: 0 0 12px;
+  cursor: grab;
+}
+#tooltip.dragging::before {
+  cursor: grabbing;
+}
+#tooltip.dragging {
+  opacity: .92;
+}
 </style>
 </head>
 <body>
@@ -380,10 +417,10 @@ main {
 <circle cx="300" cy="300" r="245" fill="none" stroke="#303b48"/>
 <circle cx="300" cy="300" r="205" fill="none" stroke="#303b48"/>
 <g id="divisions"></g>
-<text class="season" x="300" y="55">ЗИМА</text>
-<text class="season" x="300" y="555">ЛЕТО</text>
-<text class="season" x="65" y="305">ВЕСНА</text>
-<text class="season" x="535" y="305">ОСЕНЬ</text>
+<text class="season" x="300" y="27">ЗИМА</text>
+<text class="season" x="300" y="579">ЛЕТО</text>
+<text class="season" x="27" y="305">ВЕСНА</text>
+<text class="season" x="573" y="305">ОСЕНЬ</text>
 <g id="markers"></g>
 </svg>
 <div class="center">
@@ -408,7 +445,39 @@ const tooltip=document.getElementById("tooltip");
 const markers=document.getElementById("markers");
 const divisions=document.getElementById("divisions");
 
-// Автоматическая высота шапки
+//перетаскивание закреплённой карточки
+let tooltipDragging = false;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+let tooltipMoved = false;
+tooltip.addEventListener("pointerdown", (e) => {
+  //не начинаем перетаскивание при нажатии на кнопки
+  if (e.target.closest("button")) return;
+  tooltipDragging = true;
+  tooltipMoved = true;
+  const rect = tooltip.getBoundingClientRect();
+  dragOffsetX = e.clientX - rect.left;
+  dragOffsetY = e.clientY - rect.top;
+  tooltip.classList.add("dragging");
+  tooltip.setPointerCapture(e.pointerId);
+  e.preventDefault();});
+tooltip.addEventListener("pointermove", (e) => {
+  if (!tooltipDragging) return;
+  const w = tooltip.offsetWidth;
+  const h = tooltip.offsetHeight;
+  let x = e.clientX - dragOffsetX;
+  let y = e.clientY - dragOffsetY;
+  x = Math.max(0, Math.min(innerWidth - w, x));
+  y = Math.max(0, Math.min(innerHeight - h, y));
+  tooltip.style.left = x + "px";
+  tooltip.style.top = y + "px";});
+function stopTooltipDrag() {
+  tooltipDragging = false;
+  tooltip.classList.remove("dragging");}
+tooltip.addEventListener("pointerup", stopTooltipDrag);
+tooltip.addEventListener("pointercancel", stopTooltipDrag);
+
+//Авто высота шапки
 const header = document.querySelector("header");
 function updateHeaderHeight() {
   document.documentElement.style.setProperty(
@@ -456,13 +525,19 @@ function valid(d){
  return d&&d.month>=1&&d.month<=12&&d.day>=1&&d.day<=new Date(2025,d.month,0).getDate();
 }
 function key(d){return d.month+"-"+d.day}
+const CALENDAR_SHIFT = 45.5;
 function angle(d) {
   const yearStart = Date.UTC(2025, 0, 1);
   const yearLength = 365;
+
   const day = (
     Date.UTC(2025, d.month - 1, d.day) - yearStart
   ) / 86400000;
-  return -Math.PI / 2 - (day / yearLength) * Math.PI * 2;
+
+  const shiftedDay = day - CALENDAR_SHIFT;
+
+  return -Math.PI / 2 -
+    (shiftedDay / yearLength) * Math.PI * 2;
 }
 function color(s){
  let h=0;
@@ -476,20 +551,22 @@ function point(d, radius = 225){
 }
 
 function draw(){
- // Границы месяцев
- for (let i = 0; i < 12; i++) {
-    const day = (
-        Date.UTC(2025, i, 1) -
-        Date.UTC(2025, 0, 1)
-    ) / 86400000;
-    const a = -Math.PI / 2 - (day / 365) * Math.PI * 2;
+ // Границы месяцев с учётом смещения календаря
+divisions.innerHTML = "";
+for (let i = 0; i < 12; i++) {
+    const date = {
+        day: 1,
+        month: i + 1
+    };
+    const a = angle(date);
     const l = document.createElementNS(NS, "line");
     l.setAttribute("x1", 300 + 205 * Math.cos(a));
     l.setAttribute("y1", 300 + 205 * Math.sin(a));
     l.setAttribute("x2", 300 + 245 * Math.cos(a));
     l.setAttribute("y2", 300 + 245 * Math.sin(a));
     l.setAttribute("class", "line");
-    divisions.append(l);}
+    divisions.append(l);
+}
  
     markers.innerHTML="";
     let groups={};
@@ -627,21 +704,26 @@ function renderTooltip(el) {
     button.onclick = () => togglePin(button.dataset.key);
   });
 
-  // Позиционирование
-  if (el) {
+  //Позиционирование
+  if (el && !tooltipDragging) {
     const r = el.getBoundingClientRect();
     const w = tooltip.offsetWidth;
     const h = tooltip.offsetHeight;
-    tooltip.style.left =
-      Math.max(8, Math.min(innerWidth - w - 8, r.right + 10)) + "px";
-
-    tooltip.style.top =
-      Math.max(8, Math.min(innerHeight - h - 8, r.top)) + "px";
-  }
+    //если карточку уже перемещали вручную,
+    //сохраняем её положение при обновлении содержимого.
+    if (!tooltipMoved) {
+      tooltip.style.left =
+        Math.max(8, Math.min(innerWidth - w - 8, r.right + 10)) + "px";
+      tooltip.style.top =
+        Math.max(8, Math.min(innerHeight - h - 8, r.top)) + "px";}}
 }
 
 // Показ карточки при наведении
 function show(k, el) {
+  //при новом открытии карточки
+  //разрешаем автоматическое позиционирование.
+  if (!tooltip.classList.contains("visible")) {
+    tooltipMoved = false;}
   hoveredKey = k;
   active = k;
   hovered = true;
