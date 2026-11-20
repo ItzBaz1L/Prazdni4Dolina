@@ -188,7 +188,7 @@ main {
   position: absolute;
   inset: 0;
   z-index: 0;
-  border-radius: 50%;
+  border-radius: 70%;
 
   background: rgba(22, 30, 42, .19);
   border: 1px solid rgba(229, 220, 255, .12);
@@ -281,13 +281,17 @@ main {
 /* Точки */
 .marker {
   stroke: color-mix(in srgb, var(--marker-color), black 30%);
-  stroke-width: 2.5;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+  shape-rendering: geometricPrecision;
+  vector-effect: non-scaling-stroke;
   transition: filter .2s ease, stroke .2s ease;
 }
 
 .marker:hover {
   stroke: #fff;
-  stroke-width: 3;
+  stroke-width: 2.5;
   filter:
     drop-shadow(0 0 3px var(--marker-color))
     drop-shadow(0 0 9px var(--marker-color))
@@ -369,14 +373,15 @@ main {
 
 <main>
 <div class="wheel">
-<svg viewBox="0 0 600 600">
+<svg viewBox="0 0 600 600"
+     xmlns="http://www.w3.org/2000/svg">
 <circle cx="300" cy="300" r="245" fill="none" stroke="#303b48"/>
 <circle cx="300" cy="300" r="205" fill="none" stroke="#303b48"/>
 <g id="divisions"></g>
 <text class="season" x="300" y="48">ЗИМА</text>
-<text class="season" x="565" y="305">ОСЕНЬ</text>
-<text class="season" x="300" y="570">ЛЕТО</text>
-<text class="season" x="35" y="305">ВЕСНА</text>
+<text class="season" x="580" y="305">ОСЕНЬ</text>
+<text class="season" x="300" y="560">ЛЕТО</text>
+<text class="season" x="15" y="305">ВЕСНА</text>
 <g id="markers"></g>
 </svg>
 <div class="center">
@@ -463,18 +468,29 @@ function point(d, radius = 225){
  let a=angle(d);
  return {x:300+radius*Math.cos(a),y:300+radius*Math.sin(a)};
 }
+
 function draw(){
+    //деления колеса
  divisions.innerHTML="";
  for(let i=0;i<12;i++){
-  let a=-Math.PI/2-i*Math.PI/6;
-  let l=document.createElementNS(NS,"line");
-  l.setAttribute("x1",300+205*Math.cos(a));
-  l.setAttribute("y1",300+205*Math.sin(a));
-  l.setAttribute("x2",300+245*Math.cos(a));
-  l.setAttribute("y2",300+245*Math.sin(a));
-  l.setAttribute("class","line");
+  const middleDay = Math.floor(
+    (new Date(2024, i, 1).getTime() +
+     new Date(2024, i + 1, 1).getTime()) / 2
+  );
+  const yearStart = new Date(2024, 0, 1).getTime();
+  const yearLength =
+    new Date(2025, 0, 1).getTime() - yearStart;
+  const fraction = (middleDay - yearStart) / yearLength;
+  let a = -Math.PI / 2 - fraction * Math.PI * 2;
+  let l = document.createElementNS(NS, "line");
+  l.setAttribute("x1", 300 + 205 * Math.cos(a));
+  l.setAttribute("y1", 300 + 205 * Math.sin(a));
+  l.setAttribute("x2", 300 + 245 * Math.cos(a));
+  l.setAttribute("y2", 300 + 245 * Math.sin(a));
+  l.setAttribute("class", "line");
   divisions.append(l);
  }
+ 
  markers.innerHTML="";
  let groups={};
  people.forEach(p=>(groups[key(p.date)]??=[]).push(p));
