@@ -525,7 +525,7 @@ function valid(d){
  return d&&d.month>=1&&d.month<=12&&d.day>=1&&d.day<=new Date(2025,d.month,0).getDate();
 }
 function key(d){return d.month+"-"+d.day}
-const CALENDAR_SHIFT = 45.5;
+const CALENDAR_SHIFT = 15;
 function angle(d) {
   const yearStart = Date.UTC(2025, 0, 1);
   const yearLength = 365;
