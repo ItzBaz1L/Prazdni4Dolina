@@ -521,7 +521,12 @@ main {
   text-decoration-color: rgba(221, 169, 245, 0.5);
   cursor: pointer;
   overflow-wrap: anywhere;
-  transition: color .2s;}
+  transition: color .2s;
+  position: relative;
+  z-index: 5;
+  pointer-events: auto;
+  user-select: text;
+  -webkit-user-select: text;}
 .reference-link:hover {
   color: #e8b6ff;
   text-decoration-color: #ffffff;}
@@ -592,7 +597,7 @@ let dragOffsetY = 0;
 let tooltipMoved = false;
 tooltip.addEventListener("pointerdown", (e) => {
   //не начинаем перетаскивание при нажатии на кнопки
-  if (e.target.closest("button")) return;
+  if (e.target.closest("button, a, input, textarea, select")) return;
   tooltipDragging = true;
   tooltipMoved = true;
   const rect = tooltip.getBoundingClientRect();
