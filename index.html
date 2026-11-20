@@ -405,6 +405,39 @@ main {
   pointer-events: none;
   vector-effect: non-scaling-stroke;
 }
+
+/*сдвг по бокам*/
+#background.side-mode > img,
+#background.side-mode > iframe,
+#background.side-mode > video {
+  left: 50%;
+  width: 60%;
+  height: 100%;
+  object-fit: contain;
+  z-index: 1;}
+.side-brainrot {
+  position: absolute;
+  top: 0;
+  width: 20%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  z-index: 2;}
+.side-brainrot.left {
+  left: 0;}
+.side-brainrot.right {
+  right: 0;}
+@media(max-width: 700px) {
+  .side-brainrot {
+    display: none;  }
+  #background.side-mode > img,
+  #background.side-mode > iframe,
+  #background.side-mode > video {
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;  }}
+
 </style>
 </head>
 <body>
@@ -911,22 +944,27 @@ const BACKGROUNDS = [
   {
     type: "embed",
     url: '<iframe src="https://giphy.com/embed/nhUrXuZ5gY30DcomWF" width="480" height="480"></iframe>'
+    sideVideos: true,
   },
   {
     type: "embed",
     url: '<iframe src="https://giphy.com/embed/MpJJ7gWng24bjxrMiK" width="480" height="480"></iframe>'
+    sideVideos: true,
   },
   {
     type: "embed",
     url: '<iframe src="https://giphy.com/embed/zc7zLFsvGIXlu" width="480" height="480"></iframe>'
+    sideVideos: true,
   },
   {
     type: "embed",
     url: '<iframe src="https://giphy.com/embed/mnIjWW97Jn9mg" width="480" height="480"></iframe>'
+    sideVideos: true,
   },
   {
     type: "embed",
     url: '<iframe src="https://giphy.com/embed/3s8pHxxjx6biU" width="480" height="480"></iframe>'
+    sideVideos: true,
   },
   {
     type: "embed",
@@ -963,6 +1001,65 @@ const BACKGROUNDS = [
 
 const background = document.getElementById("background");
 const backgroundToggle = document.getElementById("backgroundToggle");
+//СДВГ ВИДЕО ПО КРАЯМ
+const BRAINROT_VIDEOS = {
+  subway: [
+    "https://cdn.imgpile.com/f/NGmqr8i.mp4"
+  ],
+  soap: [
+    "https://cdn.imgpile.com/f/Z7jPbX2.mp4",
+    "https://cdn.imgpile.com/f/husgqfJ.mp4",
+    "https://cdn.imgpile.com/f/KGSIYD3.mp4",
+    "https://cdn.imgpile.com/f/4kypoMY.mp4",
+    "https://cdn.imgpile.com/f/TuOwTrN.mp4",
+    "https://cdn.imgpile.com/f/V0rR8d4.mp4",
+    "https://cdn.imgpile.com/f/hN0agry.mp4",
+    "https://cdn.imgpile.com/f/U7MHjMx.mp4"
+  ]
+};
+//Случайный выбор двух разных типов видео
+function getBrainrotPair() {
+  const types = ["subway", "soap"];
+  //перемешиваем
+  types.sort(() => Math.random() - 0.5);
+  return [
+    BRAINROT_VIDEOS[types[0]][
+      Math.floor(Math.random() * BRAINROT_VIDEOS[types[0]].length)
+    ],
+    BRAINROT_VIDEOS[types[1]][
+      Math.floor(Math.random() * BRAINROT_VIDEOS[types[1]].length)
+    ]  ];}
+//Создание бокового видео
+function addBrainrotVideo(url, side) {
+  if (!url || url.startsWith("ССЫЛКА_")) return;
+  const video = document.createElement("video");
+  video.className = "side-brainrot " + side;
+  video.src = url;
+  video.autoplay = true;
+  video.loop = true;
+  video.muted = true;
+  video.playsInline = true;
+  video.preload = "auto";
+  background.appendChild(video);
+  video.play().catch(console.warn);}
+//Запуск двух боковых видео
+function startBrainrot() {
+  const oldVideos = background.querySelectorAll(".side-brainrot");
+  oldVideos.forEach(video => {
+    video.pause();
+    video.remove();
+  });
+  const [leftVideo, rightVideo] = getBrainrotPair();
+  addBrainrotVideo(leftVideo, "left");
+  addBrainrotVideo(rightVideo, "right");}
+//Отключение боковых видео
+function stopBrainrot() {
+  background.querySelectorAll(".side-brainrot").forEach(video => {
+    video.pause();
+    video.remove();
+  });
+  background.classList.remove("side-mode");}
+
 
 let gifEnabled =
   localStorage.getItem("birthdayGifEnabled") !== "false";
@@ -977,6 +1074,7 @@ function clearBackground() {
 function setBackground() {
 
   clearBackground();
+  stopBrainrot();
 
   if (!gifEnabled) {
     document.getElementById("background-overlay").style.background =
@@ -1065,7 +1163,11 @@ function setBackground() {
     "rgba(8, 12, 19, .58)";
 
   backgroundToggle.textContent = "Отключить фон";
-}
+  //сдвг видосы только для выбранных фонов
+  if (selected.sideVideos) {
+    background.classList.add("side-mode");
+    startBrainrot();
+  }
 
 // Кнопка переключения
 backgroundToggle.addEventListener("click", () => {
