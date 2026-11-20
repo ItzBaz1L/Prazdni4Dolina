@@ -156,7 +156,7 @@ header {
 }
 
 
-/* НОВАЯ КОМПОНОВКА*/
+/* НОВАЯ КОМПОНОВКА!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 /* Рабочая область под шапкой */
 main {
   position: relative;
@@ -170,7 +170,7 @@ main {
 
 /* Колесо */
 .wheel {
-  width: min(680px, 88vw, calc(100svh - var(--header-height) - 40px));
+  width: min(740px, 92vw, calc(100svh - var(--header-height) - 24px));
   aspect-ratio: 1;
   position: relative;
   padding: 0;
@@ -280,8 +280,19 @@ main {
 
 /* Точки */
 .marker {
-  stroke: #14111b;
-  stroke-width: 2;}
+  stroke: color-mix(in srgb, var(--marker-color), black 30%);
+  stroke-width: 2.5;
+  transition: filter .2s ease, stroke .2s ease;
+}
+
+.marker:hover {
+  stroke: #fff;
+  stroke-width: 3;
+  filter:
+    drop-shadow(0 0 3px var(--marker-color))
+    drop-shadow(0 0 9px var(--marker-color))
+    drop-shadow(0 0 14px var(--marker-color));
+}
 
 
 /* Общая область фона */
@@ -325,7 +336,7 @@ main {
   main {
     padding: 12px;  }
   .wheel {
-    width: min(94vw, calc(100svh - var(--header-height) - 28px));  }
+    width: min(96vw, calc(100svh - var(--header-height) - 20px));  }
   .center {
     width: 38%;
     height: 38%;
@@ -363,9 +374,9 @@ main {
 <circle cx="300" cy="300" r="205" fill="none" stroke="#303b48"/>
 <g id="divisions"></g>
 <text class="season" x="300" y="48">ЗИМА</text>
-<text class="season" x="525" y="305">ОСЕНЬ</text>
+<text class="season" x="565" y="305">ОСЕНЬ</text>
 <text class="season" x="300" y="570">ЛЕТО</text>
-<text class="season" x="75" y="305">ВЕСНА</text>
+<text class="season" x="35" y="305">ВЕСНА</text>
 <g id="markers"></g>
 </svg>
 <div class="center">
@@ -500,10 +511,10 @@ function drawCluster(items) {
     c.setAttribute("cx", p.x);
     c.setAttribute("cy", p.y);
     c.setAttribute("r", 7);
-    c.setAttribute(
-      "fill",
-      color(g.map(x => x.name).join("|"))
-    );
+    const markerColor = color(g.map(x => x.name).join("|"));
+    c.setAttribute("fill", markerColor);
+    c.style.setProperty("--marker-color", markerColor);
+    c.setAttribute("stroke", markerColor);
     c.setAttribute("class", "marker");
     c.addEventListener("mouseenter", () => show(k, c));
     c.addEventListener("mouseleave", () => {
