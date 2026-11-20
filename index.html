@@ -1168,7 +1168,7 @@ function setBackground() {
     background.classList.add("side-mode");
     startBrainrot();
   }
-
+}
 // Кнопка переключения
 backgroundToggle.addEventListener("click", () => {
   gifEnabled = !gifEnabled;
@@ -1183,6 +1183,7 @@ backgroundToggle.addEventListener("click", () => {
 setBackground();
 
 draw();
+drawTodayMarker();
 load();
 
 setInterval(load, REFRESH);
