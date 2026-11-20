@@ -531,51 +531,68 @@ main {
   color: #e8b6ff;
   text-decoration-color: #ffffff;}
 </style>
-</head>
-<body>
-    
-<div id="background"></div>
-<div id="background-overlay"></div>
 
-<header>
-  <div class="header-info">
-    <div class="header-title">
-      <h1>Праздничная долина</h1>
-      <div class="version-info">
-        <span>Версия 1.1.1</span>
-        <span>От 20.11.2026</span>
+</style>
+</head>
+
+<body>
+
+  <!-- ФОНОВЫЙ СЛОЙ -->
+  <div id="background"></div>
+  <div id="background-overlay"></div>
+
+  <!-- ШАПКА -->
+  <header>
+    <div class="header-info">
+      <div class="header-title">
+        <h1>Праздничная долина</h1>
+
+        <div class="version-info">
+          <span>Версия 1.1.2</span>
+          <span>Обновлено: 20.11.2026</span>
+        </div>
+      </div>
+      <div id="status">Загрузка...</div>
+    </div>
+    <button id="backgroundToggle" class="theme-toggle">
+      Отключить фон
+    </button>
+  </header>
+
+  <!-- ОСНОВНАЯ ОБЛАСТЬ -->
+  <main>
+    <!-- КОЛЕСО КАЛЕНДАРЯ -->
+    <div class="wheel">
+      <svg viewBox="0 0 600 600"
+           xmlns="http://www.w3.org/2000/svg">
+        <circle cx="300" cy="300" r="245"
+                fill="none" stroke="#303b48"/>
+        <circle cx="300" cy="300" r="205"
+                fill="none" stroke="#303b48"/>
+        <!-- Разделители месяцев -->
+        <g id="divisions"></g>
+        <!-- Маркер текущей даты -->
+        <g id="todayMarker"></g>
+        <!-- Времена года -->
+        <text class="season" x="300" y="27">ЗИМА</text>
+        <text class="season" x="300" y="579">ЛЕТО</text>
+        <text class="season" x="27" y="305">ВЕСНА</text>
+        <text class="season" x="573" y="305">ОСЕНЬ</text>
+        <!-- Дни рождения -->
+        <g id="markers"></g>
+      </svg>
+      <!--ЦЕНТРАЛЬНЫЙ ТАЙМЕР-->
+      <div class="center">
+        <small>БЛИЖАЙШИЙ ДЕНЬ РОЖДЕНИЯ</small>
+        <div id="timer">--</div>
+        <div id="timerName">Загрузка...</div>
       </div>
     </div>
-    <div id="status">Загрузка...</div>
-  </div>
+  </main>
+  <!--ВСПЛЫВАЮЩИЕ КАРТОЧКИ -->
+  <div id="tooltip"></div>
 
-  <button id="backgroundToggle" class="theme-toggle">
-    Отключить фон
-  </button>
-</header>
-
-<main>
-<div class="wheel">
-<svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
-<circle cx="300" cy="300" r="245" fill="none" stroke="#303b48"/>
-<circle cx="300" cy="300" r="205" fill="none" stroke="#303b48"/>
-<g id="divisions"></g>
-<g id="todayMarker"></g>
-<text class="season" x="300" y="27">ЗИМА</text>
-<text class="season" x="300" y="579">ЛЕТО</text>
-<text class="season" x="27" y="305">ВЕСНА</text>
-<text class="season" x="573" y="305">ОСЕНЬ</text>
-<g id="markers"></g>
-</svg>
-<div class="center">
-<small>БЛИЖАЙШИЙ ДЕНЬ РОЖДЕНИЯ</small>
-<div id="timer">--</div>
-<div id="timerName">Загрузка...</div>
-</div>
-</div>
-</main>
-<div id="tooltip"></div>
-<script>
+  <script>
 const SHEET_ID="1H8JM7nr8f2moRBVroHakqZWCOwkbq6OrREMwL8Pathk";
 const SHEET_GID="0";
 const REFRESH=300000;
