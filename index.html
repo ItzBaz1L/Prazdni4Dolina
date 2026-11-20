@@ -406,44 +406,53 @@ main {
   vector-effect: non-scaling-stroke;
 }
 
-/*сдвг по бокам*/
+/*сдвг по бокам, три колонки фона*/
 #background.side-mode {
-  display: grid;
-  grid-template-columns: 1fr 3fr 1fr;
-  gap: 10px;
+  display: flex;
   align-items: stretch;
-  padding: 0 10px;}
+  justify-content: center;
+  gap: 0;
+  overflow: hidden;
+  background: #14111b;}
+/* Центральный основной фон */
 #background.side-mode > img,
 #background.side-mode > iframe,
-#background.side-mode > video {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 60%;
-  height: 100%;
-  transform: translate(-50%, -50%);
+#background.side-mode > video:not(.side-brainrot) {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  width: 60% !important;
+  height: 100% !important;
+  flex: 0 0 60%;
   object-fit: contain;
+  object-position: center;
   z-index: 1;}
+/* Боковые ролики */
 .side-brainrot {
-  position: absolute;
-  top: 0;
-  width: 19%;
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+  width: 20%;
   height: 100%;
+  flex: 0 0 20%;
   object-fit: cover;
+  object-position: center;
   pointer-events: none;
   z-index: 2;}
 .side-brainrot.left {
-  left: 0;}
+  order: -1;}
 .side-brainrot.right {
-  right: 0;}
+  order: 1;}
 @media(max-width: 700px) {
+  .side-brainrot {
+    display: none;  }
   #background.side-mode > img,
   #background.side-mode > iframe,
-  #background.side-mode > video {
-    width: 100%;
-    height: 100%;  }
-  .side-brainrot {
-    display: none;  }}
+  #background.side-mode > video:not(.side-brainrot) {
+    width: 100% !important;
+    flex-basis: 100%;  }}
 
 </style>
 </head>
@@ -1038,7 +1047,7 @@ function getBrainrotPair() {
     ]  ];}
 //Создание бокового видео
 function addBrainrotVideo(url, side) {
-  if (!url || url.startsWith("ССЫЛКА_")) return;
+  if (!url) return;
   const video = document.createElement("video");
   video.className = "side-brainrot " + side;
   video.src = url;
@@ -1046,16 +1055,13 @@ function addBrainrotVideo(url, side) {
   video.loop = true;
   video.muted = true;
   video.playsInline = true;
-  video.preload = "auto";
   background.appendChild(video);
   video.play().catch(console.warn);}
 //Запуск двух боковых видео
 function startBrainrot() {
-  const oldVideos = background.querySelectorAll(".side-brainrot");
-  oldVideos.forEach(video => {
-    video.pause();
-    video.remove();
-  });
+  background.querySelectorAll(".side-brainrot").forEach(v => {
+    v.pause();
+    v.remove();  });
   const [leftVideo, rightVideo] = getBrainrotPair();
   addBrainrotVideo(leftVideo, "left");
   addBrainrotVideo(rightVideo, "right");}
