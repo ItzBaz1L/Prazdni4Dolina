@@ -474,7 +474,7 @@ main {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #a99cc9;
+  color: #ac98fa;
   font-size: 11px;
   letter-spacing: .3px;}
 .version-info span {
@@ -490,7 +490,7 @@ main {
 .interests small,
 .references small {
   display: block;
-  color: #9c9abd;
+  color: #9c91c5;
   font-size: 10px;
   letter-spacing: 1px;
   margin-bottom: 7px;}
@@ -502,9 +502,9 @@ main {
   word-break: normal;}
 .references {
   background: rgba(35, 28, 49, .85);
-  border-left-color: #83a9c9;}
+  border-left-color: #9c91c5;}
 .references small {
-  color: #83a9c9;}
+  color: #9c91c5;}
 @media(max-width: 600px) {
   .header-title {
     gap: 7px;
@@ -515,6 +515,16 @@ main {
     gap: 5px 10px;
     font-size: 10px;  }}
 
+.reference-link {
+  color: #d9a9f5;
+  text-decoration: underline;
+  text-decoration-color: rgba(221, 169, 245, 0.5);
+  cursor: pointer;
+  overflow-wrap: anywhere;
+  transition: color .2s;}
+.reference-link:hover {
+  color: #e8b6ff;
+  text-decoration-color: #ffffff;}
 </style>
 </head>
 <body>
@@ -527,7 +537,7 @@ main {
     <div class="header-title">
       <h1>Праздничная долина</h1>
       <div class="version-info">
-        <span>Версия 1.1.0</span>
+        <span>Версия 1.1.1</span>
         <span>От 20.11.2026</span>
       </div>
     </div>
@@ -799,8 +809,26 @@ if (cluster.length) {
 
 function esc(s){
  return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':
- "&quot;","'":"&#39;"}[c]));
-}
+ "&quot;","'":"&#39;"}[c]));}
+
+function formatReferences(value) {
+  const text = String(value || "").trim();
+
+  if (!text) return "Не указаны";
+
+  return text.split(/\s+/).map(item => {
+    // Проверяем, является ли текст ссылкой
+    if (/^https?:\/\/[^\s]+$/i.test(item)) {
+      const url = esc(item);
+
+      return `<a href="${url}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="reference-link">${url}</a>`;
+    }
+
+    return esc(item);
+  }).join("<br>");}
 
 function personHTML(p){
  return `
@@ -823,8 +851,8 @@ function personHTML(p){
      <div>${esc(p.interests || "Не указаны")}</div>
    </div>
    <div class="references">
-     <small>РЕФЕРЕНСЫ</small>
-     <div>${esc(p.references || "Не указаны")}</div>
+     <small>РЕФЕРЕНСЫ, АРТЫ</small>
+     <div>${formatReferences(p.references)}</div>
    </div>
  </div>`;
 }
