@@ -462,6 +462,59 @@ main {
     height: 100%;
   }}
 
+/* ШАПКА И ИНФОРМАЦИЯ О ВЕРСИИ */
+.header-info {
+  min-width: 0;}
+.header-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;}
+.version-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #a99cc9;
+  font-size: 11px;
+  letter-spacing: .3px;}
+.version-info span {
+  white-space: nowrap;}
+/* БЛОКИ ИНТЕРЕСОВ И РЕФЕРЕНСОВ */
+.interests,
+.references {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  background: #1c1727;
+  border-left: 2px solid #9c91c5;}
+.interests small,
+.references small {
+  display: block;
+  color: #9c9abd;
+  font-size: 10px;
+  letter-spacing: 1px;
+  margin-bottom: 7px;}
+.interests div,
+.references div {
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  word-break: normal;}
+.references {
+  background: rgba(35, 28, 49, .85);
+  border-left-color: #83a9c9;}
+.references small {
+  color: #83a9c9;}
+@media(max-width: 600px) {
+  .header-title {
+    gap: 7px;
+    align-items: flex-start;
+    flex-direction: column;  }
+  .version-info {
+    flex-wrap: wrap;
+    gap: 5px 10px;
+    font-size: 10px;  }}
+
 </style>
 </head>
 <body>
@@ -470,8 +523,14 @@ main {
 <div id="background-overlay"></div>
 
 <header>
-  <div>
-    <h1>Праздничная долина</h1>
+  <div class="header-info">
+    <div class="header-title">
+      <h1>Праздничная долина</h1>
+      <div class="version-info">
+        <span>Версия 1.1.0</span>
+        <span>От 20.11.2026</span>
+      </div>
+    </div>
     <div id="status">Загрузка...</div>
   </div>
 
@@ -749,17 +808,23 @@ function personHTML(p){
    <div class="profile">
      <div>
        <h2>${esc(p.name)}</h2>
-       <div class="date">${p.date.day} ${months[p.date.month-1]}</div>
+       <div class="date">
+         ${p.date.day} ${months[p.date.month-1]}
+       </div>
      </div>
      ${p.image
-       ? `<img class="photo" src="${esc(p.image)}" alt="" onerror="this.style.display='none'">`
+       ? `<img class="photo" src="${esc(p.image)}" alt=""
+          onerror="this.style.display='none'">`
        : `<div class="photo"></div>`
      }
    </div>
-
    <div class="interests">
      <small>ИНТЕРЕСЫ</small>
      <div>${esc(p.interests || "Не указаны")}</div>
+   </div>
+   <div class="references">
+     <small>РЕФЕРЕНСЫ</small>
+     <div>${esc(p.references || "Не указаны")}</div>
    </div>
  </div>`;
 }
@@ -860,44 +925,25 @@ function checkHide() {
     tooltip.classList.remove("visible");}
 }
 
-
-function timer() {
-  if (!people.length) {
-    document.getElementById("timer").textContent = "--";
-    document.getElementById("timerName").textContent = "Нет данных";
-    return;  }
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  // Вычисляем ближайшую дату рождения
-  const upcoming = people.map(p => {
-    let d = new Date(
-      currentYear,
-      p.date.month - 1,
-      p.date.day);
-    if (d <= now) {
-      d = new Date(
-        currentYear + 1,
-        p.date.month - 1,
-        p.date.day);}
-    return { p, d };});
-  const nearestTime = Math.min(
-    ...upcoming.map(x => x.d.getTime())  );
-  // Собираем ВСЕХ именинников этой даты
-  const birthdayPeople = upcoming.filter(
-    x => x.d.getTime() === nearestTime  );
-  const nextDate = new Date(nearestTime);
-  const diff = nextDate - now;
-  const days = Math.floor(diff / 86400000);
-  const hours = Math.floor(diff % 86400000 / 3600000);
-  const mins = Math.floor(diff % 3600000 / 60000);
-  document.getElementById("timer").textContent =
-    days
-      ? `${days} дн. ${hours} ч.`
-      : `${hours} ч. ${mins} мин.`;
-  // Показываем
-  document.getElementById("timerName").textContent =
-    birthdayPeople.map(x => x.p.name).join(", ");}
-
+function timer(){
+ if (!people.length) {
+  document.getElementById("timer").textContent = "--";
+  document.getElementById("timerName").textContent = "Нет данных";
+  return; }
+ let now=new Date();
+ let next=people.map(p=>{
+  let y=now.getFullYear();
+  let d=new Date(y,p.date.month-1,p.date.day);
+  if(d<=now)d=new Date(y+1,p.date.month-1,p.date.day);
+  return {p,d};
+ }).sort((a,b)=>a.d-b.d)[0];
+ let diff=next.d-now;
+ let days=Math.floor(diff/86400000);
+ let hours=Math.floor(diff%86400000/3600000);
+ let mins=Math.floor(diff%3600000/60000);
+ document.getElementById("timer").textContent=days?`${days} дн. ${hours} ч.`:`${hours} ч. ${mins} мин.`;
+ document.getElementById("timerName").textContent=next.p.name;
+}
 
 async function load() {
   const status = document.getElementById("status");
@@ -933,7 +979,8 @@ async function load() {
       const name = String(c[0]?.v ?? "").trim();
       const date = parseDate(c[1]?.v, c[1]?.f);
       const image = String(c[2]?.v ?? "").trim();
-      const interests = String(c[3]?.v ?? "").trim();
+      const references = String(c[3]?.v ?? "").trim();
+      const interests = String(c[4]?.v ?? "").trim();
 
       if (!name || !valid(date)) {
         console.warn("Пропущена строка:", index + 2);
@@ -943,8 +990,8 @@ async function load() {
         name,
         date,
         image,
-        interests
-      });
+        interests,
+        references});
     });
 
     people = loaded;
@@ -1011,8 +1058,7 @@ const BACKGROUNDS = [
   },
   {
     type: "embed",
-    url: '<iframe src="https://giphy.com/embed/YxA2PPkXbwRTa" width="480" height="480"></iframe>',
-    sideVideos: true,
+    url: '<iframe src="https://giphy.com/embed/YxA2PPkXbwRTa" width="480" height="480"></iframe>'
   },
   {
     type: "embed",
