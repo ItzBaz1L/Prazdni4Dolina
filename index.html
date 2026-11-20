@@ -860,25 +860,44 @@ function checkHide() {
     tooltip.classList.remove("visible");}
 }
 
-function timer(){
- if (!people.length) {
-  document.getElementById("timer").textContent = "--";
-  document.getElementById("timerName").textContent = "Нет данных";
-  return; }
- let now=new Date();
- let next=people.map(p=>{
-  let y=now.getFullYear();
-  let d=new Date(y,p.date.month-1,p.date.day);
-  if(d<=now)d=new Date(y+1,p.date.month-1,p.date.day);
-  return {p,d};
- }).sort((a,b)=>a.d-b.d)[0];
- let diff=next.d-now;
- let days=Math.floor(diff/86400000);
- let hours=Math.floor(diff%86400000/3600000);
- let mins=Math.floor(diff%3600000/60000);
- document.getElementById("timer").textContent=days?`${days} дн. ${hours} ч.`:`${hours} ч. ${mins} мин.`;
- document.getElementById("timerName").textContent=next.p.name;
-}
+
+function timer() {
+  if (!people.length) {
+    document.getElementById("timer").textContent = "--";
+    document.getElementById("timerName").textContent = "Нет данных";
+    return;  }
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  // Вычисляем ближайшую дату рождения
+  const upcoming = people.map(p => {
+    let d = new Date(
+      currentYear,
+      p.date.month - 1,
+      p.date.day);
+    if (d <= now) {
+      d = new Date(
+        currentYear + 1,
+        p.date.month - 1,
+        p.date.day);}
+    return { p, d };});
+  const nearestTime = Math.min(
+    ...upcoming.map(x => x.d.getTime())  );
+  // Собираем ВСЕХ именинников этой даты
+  const birthdayPeople = upcoming.filter(
+    x => x.d.getTime() === nearestTime  );
+  const nextDate = new Date(nearestTime);
+  const diff = nextDate - now;
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor(diff % 86400000 / 3600000);
+  const mins = Math.floor(diff % 3600000 / 60000);
+  document.getElementById("timer").textContent =
+    days
+      ? `${days} дн. ${hours} ч.`
+      : `${hours} ч. ${mins} мин.`;
+  // Показываем
+  document.getElementById("timerName").textContent =
+    birthdayPeople.map(x => x.p.name).join(", ");}
+
 
 async function load() {
   const status = document.getElementById("status");
