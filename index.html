@@ -6,13 +6,13 @@
 <title>Праздничная долина</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#13111b;color:#e6e5f1;font:15px Arial,sans-serif}
+body{margin:0;background:#161325;color:#e6e5f1;font:15px Arial,sans-serif}
 header{padding:18px 25px;border-bottom:1px solid #343044}
 h1{font-size:19px;font-weight:500;margin:0}
-#status{font-size:12px;color:#8f89a5;margin-top:7px}
+#status{font-size:12px;color:#4f476e;margin-top:7px}
 main{display:grid;place-items:center;padding:20px}
 .wheel{width:min(900px,96vw);position:relative;aspect-ratio:1;
-    padding:18px;border-radius:50%;background:rgba(22, 30, 42, .19);
+    padding:18px;border-radius:50%;background:rgba(27, 22, 42, 0.19);
     backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
     border:1px solid rgba(229, 220, 255, 0.12);
     box-shadow:
@@ -134,7 +134,7 @@ header {
   transform: translate(-50%, -50%);
   border: none;
   pointer-events: none;
-},
+}
 #background video {
   position: absolute;
   inset: 0;
@@ -188,7 +188,7 @@ main {
   position: absolute;
   inset: 0;
   z-index: 0;
-  border-radius: 70%;
+  border-radius: 50%;
 
   background: rgba(22, 30, 42, .19);
   border: 1px solid rgba(229, 220, 255, .12);
@@ -305,7 +305,7 @@ main {
   inset: var(--header-height) 0 0 0;
   z-index: 0;
   overflow: hidden;
-  background-color: #14111b;
+  background-color: #241e35;
 }
 
 /* Единое центрирование изображений, видео и Embed */
@@ -331,7 +331,7 @@ main {
   position: fixed;
   inset: var(--header-height) 0 0 0;
   z-index: 0;
-  background: rgba(8, 12, 19, .58);
+  background: rgba(16, 12, 27, 0.37);
   pointer-events: none;
 }
 
@@ -373,8 +373,7 @@ main {
 
 <main>
 <div class="wheel">
-<svg viewBox="0 0 600 600"
-     xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
 <circle cx="300" cy="300" r="245" fill="none" stroke="#303b48"/>
 <circle cx="300" cy="300" r="205" fill="none" stroke="#303b48"/>
 <g id="divisions"></g>
@@ -773,7 +772,7 @@ const BACKGROUNDS = [
   // Прямая на GIF
   {
     type: "image",
-    url: "https://media.giphy.com/media/example/giphy.gif"
+    url: "https://media.giphy.com/media/example/ВАШ_ID"
   },
 
   // Giphy Embed
