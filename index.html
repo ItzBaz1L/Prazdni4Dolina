@@ -6,36 +6,45 @@
 <title>Праздничная долина</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#11151b;color:#e5eaf1;font:15px Arial,sans-serif}
-header{padding:18px 25px;border-bottom:1px solid #303844}
+body{margin:0;background:#13111b;color:#e6e5f1;font:15px Arial,sans-serif}
+header{padding:18px 25px;border-bottom:1px solid #343044}
 h1{font-size:19px;font-weight:500;margin:0}
-#status{font-size:12px;color:#8995a5;margin-top:7px}
+#status{font-size:12px;color:#8f89a5;margin-top:7px}
 main{display:grid;place-items:center;padding:20px}
-.wheel{width:min(700px,95vw);position:relative;aspect-ratio:1}
+.wheel{width:min(900px,96vw);position:relative;aspect-ratio:1;
+    padding:18px;border-radius:50%;background:rgba(22, 30, 42, .19);
+    backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
+    border:1px solid rgba(229, 220, 255, 0.12);
+    box-shadow:
+    0 10px 45px rgba(0, 0, 0, .10),
+    inset 0 0 35px rgba(228, 220, 255, 0.025);}
+.wheel svg{width:100%;height:100%;display:block;}
 svg{width:100%;height:100%}
-.season{fill:#aeb9c8;font-size:13px;letter-spacing:2px}
-.center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:36%;height:36%;background:#1b222c;border:1px solid #394553;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:12px}
-.center small{color:#929eae;font-size:10px;letter-spacing:1px}
+.season{fill:#b6aec8;font-size:13px;letter-spacing:2px;pointer-events:none;}
+.center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:36%;height:36%;background:#1e1b2c;border:1px solid #3c3953;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:12px}
+.center small{color:#9a92ae;font-size:10px;letter-spacing:1px}
 #timer{font-size:clamp(17px,3vw,27px);margin:12px 0;font-variant-numeric:tabular-nums}
-#timerName{font-size:13px;color:#b9c8d9}
-.marker{cursor:pointer;stroke:#11151b;stroke-width:2}
+#timerName{font-size:13px;color:#c3b9d9}
+.marker{cursor:pointer;stroke:#14111b;stroke-width:2}
 .marker:hover{filter:drop-shadow(0 0 7px white)}
-.line{stroke:#536071;opacity:.45}
-#tooltip{position:fixed;display:none;z-index:20;width:min(420px,calc(100vw - 20px));padding:16px;background:#202833;border:1px solid #536276;box-shadow:0 12px 35px #000b}
+.line{stroke:#5c5371;opacity:.45}
+#tooltip{position:fixed;display:none;z-index:20;width:min(420px,calc(100vw - 20px));padding:16px;background:#242033;border:1px solid #5b5376;box-shadow:0 12px 35px rgba(0, 0, 0, 0.733)}
 #tooltip.visible{display:block}
-.people{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
-.person+.person{border-left:1px solid #485565;padding-left:15px}
+.people{display:grid;grid-template-columns:1fr;gap:15px}
+.person+.person{border-left:1px solid #504865;padding-left:15px}
+.person {min-width:0;}
 .person h2{font-size:17px;font-weight:500;margin:0 0 12px}
-.profile{display:grid;grid-template-columns:minmax(0,1fr) 105px;gap:12px}
-.date{padding-bottom:10px;border-bottom:1px solid #485565;color:#b8c9dc}
-.interests{margin-top:12px;padding:10px;background:#171e27;border-left:2px solid #91a8c5}
-.interests small{display:block;color:#9aaabd;font-size:10px;letter-spacing:1px;margin-bottom:7px}
-.interests div{font-size:13px;line-height:1.5;overflow-wrap:anywhere}
-.photo{width:105px;height:135px;object-fit:cover;background:#303946}
-button{margin-top:14px;background:transparent;border:1px solid #66778d;color:#e5eaf1;padding:8px 12px;cursor:pointer}
-button:hover{background:#303b49}
-.duplicate{font-size:12px;color:#b8c9dc;margin-bottom:12px}
-@media(max-width:500px){.center{width:42%;height:42%}.season{font-size:10px}.profile{grid-template-columns:minmax(0,1fr) 75px}.photo{width:75px;height:110px}}
+.profile{display:grid;grid-template-columns:minmax(0,1fr) 90px;gap:15px}
+.date{padding-bottom:10px;border-bottom:1px solid #504865;color:#c0b8dc}
+.interests{width:100%;margin-top:12px;padding:12px;background:#1c1727;border-left:2px solid #9c91c5}
+.interests small{display:block;color:#9c9abd;font-size:10px;letter-spacing:1px;margin-bottom:7px}
+.interests div{font-size:13px;line-height:1.6;overflow-wrap:anywhere;word-break:normal;}
+.pinned-group + .pinned-group{border-top:1px solid #5c5376;margin-top:16px;padding-top:16px;}
+.photo{width:90px;height:120px;object-fit:cover;background:#363046}
+button{margin-top:14px;background:transparent;border:1px solid #6e668d;color:#e8e5f1;padding:8px 12px;cursor:pointer}
+button:hover{background:#353049}
+.duplicate{font-size:12px;color:#c0b8dc;margin-bottom:12px}
+@media(max-width:500px){.center{width:42%;height:42%}.season{font-size:10px}.wheel{width:98vw; padding:12px;}.profile{grid-template-columns:minmax(0,1fr) 75px}.photo{width:75px;height:110px}}
 
 
 
@@ -43,7 +52,11 @@ body {
   background: transparent;
   min-height: 100vh;
 }
-header, main {
+header {
+  position: relative;
+  z-index: 2;
+}
+main {
   position: relative;
   z-index: 1;
 }
@@ -55,29 +68,19 @@ header {
   align-items: center;
   gap: 15px;
   position: relative;
-  background: rgba(20, 27, 37, .65);
+  background: rgba(25, 20, 37, 0.65);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(220,235,255,.15);
-}
-.wheel {
-  padding: 12px;
-  background: rgba(22, 30, 42, .38);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(220,235,255,.13);
+  border-bottom: 1px solid rgba(231, 220, 255, 0.15);
 }
 .center {
-  background: rgba(25, 34, 47, .78);
+  background: rgba(25, 20, 37, .78);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(220,235,255,.2);
+  border: 1px solid rgba(231,220,255,.2);
 }
 #tooltip {
-  background: rgba(31, 41, 54, .91);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(220,235,255,.25);
+  z-index: 10;
 }
 
 /*КНОПКА ФОНА*/
@@ -85,8 +88,8 @@ header {
   margin: 0;
   flex-shrink: 0;
   padding: 9px 14px;
-  background: rgba(255,255,255,.07);
-  border: 1px solid rgba(220,235,255,.25);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(231,220,255,.25);
   color: #e5eaf1;
   font-size: 12px;
   transition: background .2s;
@@ -102,40 +105,52 @@ header {
     padding: 8px;
     font-size: 11px;
   }
-  .wheel {
-    padding: 3px;
-  }
 }
 
 
-/*ФОНОВОЕ ВИДЕО И EMBED*/
+/*ФОН*/
+:root {--header-height: 75px;}
 #background {
   position: fixed;
+  top: var(--header-height);
+  left: 0;
+  right: 0;
+  bottom: 0;
   inset: 0;
-  z-index: -2;
+  z-index: 0;
   overflow: hidden;
-  background-color: #11151b;
+  background-color: #14111b;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
-
-#background iframe,
-#background video {
+#background img,
+#background iframe{
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 100vw;
-  height: 100vh;
-  min-width: 177.78vh;
-  min-height: 56.25vw;
+  width: max(100%, calc((100vh - var(--header-height)) * 16 / 9));
+  height: max(100%, calc(100vw * 9 / 16));
   transform: translate(-50%, -50%);
-  border: 0;
-  object-fit: cover;
+  border: none;
   pointer-events: none;
+},
+#background video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 #background-overlay {
   position: fixed;
-  inset: 0;
-  z-index: -1;
+  top: var(--header-height);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
   background: rgba(8, 12, 19, .58);
   pointer-events: none;
 }
@@ -165,10 +180,10 @@ header {
 <circle cx="300" cy="300" r="245" fill="none" stroke="#303b48"/>
 <circle cx="300" cy="300" r="205" fill="none" stroke="#303b48"/>
 <g id="divisions"></g>
-<text class="season" x="300" y="30" text-anchor="middle">ЗИМА</text>
-<text class="season" x="596" y="304" text-anchor="end">ОСЕНЬ</text>
-<text class="season" x="300" y="592" text-anchor="middle">ЛЕТО</text>
-<text class="season" x="4" y="304">ВЕСНА</text>
+<text class="season" x="300" y="18" text-anchor="middle">ЗИМА</text>
+<text class="season" x="585" y="304" text-anchor="end">ОСЕНЬ</text>
+<text class="season" x="300" y="595" text-anchor="middle">ЛЕТО</text>
+<text class="season" x="15" y="304">ВЕСНА</text>
 <g id="markers"></g>
 </svg>
 <div class="center">
@@ -193,8 +208,18 @@ const tooltip=document.getElementById("tooltip");
 const markers=document.getElementById("markers");
 const divisions=document.getElementById("divisions");
 
-const months=["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+// Автоматическая высота шапки
+const header = document.querySelector("header");
+function updateHeaderHeight() {
+  document.documentElement.style.setProperty(
+    "--header-height",
+    header.offsetHeight + "px");}
+updateHeaderHeight();
+window.addEventListener("resize", updateHeaderHeight);
+new ResizeObserver(updateHeaderHeight).observe(header);
 
+const months=["января","февраля","марта","апреля","мая","июня",
+"июля","августа","сентября","октября","ноября","декабря"];
 
 function parseDate(value, formatted) {
   const v = String(value ?? "").trim();
@@ -238,11 +263,12 @@ function angle(d){
 function color(s){
  let h=0;
  for(let c of s)h=(h*31+c.charCodeAt(0))>>>0;
- return ["#e5a16f","#8eb9df","#c19ad9","#8dc3a5","#e1b77b","#dc8c9a","#83c9ca","#c3b58b"][h%8];
+ return ["#e5a16f","#8eb9df","#c19ad9","#8dc3a5","#e1b77b","#dc8c9a","#83c9ca","#c3b58b"]
+ [h%8];
 }
-function point(d){
+function point(d, radius = 225){
  let a=angle(d);
- return {x:300+225*Math.cos(a),y:300+225*Math.sin(a)};
+ return {x:300+radius*Math.cos(a),y:300+radius*Math.sin(a)};
 }
 function draw(){
  divisions.innerHTML="";
@@ -259,54 +285,188 @@ function draw(){
  markers.innerHTML="";
  let groups={};
  people.forEach(p=>(groups[key(p.date)]??=[]).push(p));
+
  Object.entries(groups).forEach(([k,g])=>{
-  let p=point(g[0].date);
-  let c=document.createElementNS(NS,"circle");
-  c.setAttribute("cx",p.x);c.setAttribute("cy",p.y);
-  c.setAttribute("r",6);c.setAttribute("fill",color(g.map(x=>x.name).join("|")));
-  c.setAttribute("class","marker");
-  c.addEventListener("mouseenter",()=>show(k,c));
-  c.addEventListener("mouseleave",()=>{hovered=false;setTimeout(checkHide,150)});
-  c.addEventListener("click",()=>show(k,c));
-  markers.append(c);
- });
+// Сортируем даты по календарному порядку
+const entries = Object.entries(groups).sort((a, b) => {
+  const da = a[1][0].date;
+  const db = b[1][0].date;
+  return (
+    Date.UTC(2024, da.month - 1, da.day) -
+    Date.UTC(2024, db.month - 1, db.day)
+  );
+});
+
+// Радиусы для близких дат
+const radii = [225, 255, 195, 265, 185, 245, 205];
+let cluster = [];
+let previousDay = null;
+function dayNumber(d) {
+  return (
+    Date.UTC(2024, d.month - 1, d.day) -
+    Date.UTC(2024, 0, 1)
+  ) / 86400000;
 }
+function drawCluster(items) {
+  items.forEach(([k, g], index) => {
+    const radius = items.length > 1
+      ? radii[index % radii.length]
+      : 225;
+
+    const p = point(g[0].date, radius);
+    let c = document.createElementNS(NS, "circle");
+    c.setAttribute("cx", p.x);
+    c.setAttribute("cy", p.y);
+    c.setAttribute("r", 7);
+    c.setAttribute(
+      "fill",
+      color(g.map(x => x.name).join("|"))
+    );
+    c.setAttribute("class", "marker");
+    c.addEventListener("mouseenter", () => show(k, c));
+    c.addEventListener("mouseleave", () => {
+     hovered = false;
+     setTimeout(checkHide, 150);});
+    c.addEventListener("click", () => show(k, c));
+    markers.append(c);});
+}
+
+// Объединяем близкие даты в группы
+entries.forEach(entry => {
+  const currentDay = dayNumber(entry[1][0].date);
+  if (
+    previousDay !== null &&
+    currentDay - previousDay > 4
+  ) {
+    drawCluster(cluster);
+    cluster = [];
+  }
+  cluster.push(entry);
+  previousDay = currentDay;
+});
+if (cluster.length) {
+  drawCluster(cluster);
+}
+});
+}
+
 function esc(s){
- return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+ return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':
+ "&quot;","'":"&#39;"}[c]));
 }
+
 function personHTML(p){
- return `<div class="person"><div class="profile"><div>
- <h2>${esc(p.name)}</h2>
- <div class="date">${p.date.day} ${months[p.date.month-1]}</div>
- <div class="interests"><small>ИНТЕРЕСЫ</small><div>${esc(p.interests||"Не указаны")}</div></div>
- </div>${p.image?`<img class="photo" src="${esc(p.image)}" alt="" onerror="this.style.display='none'">`:`<div class="photo"></div>`}
- </div></div>`;
+ return `
+ <div class="person">
+   <div class="profile">
+     <div>
+       <h2>${esc(p.name)}</h2>
+       <div class="date">${p.date.day} ${months[p.date.month-1]}</div>
+     </div>
+     ${p.image
+       ? `<img class="photo" src="${esc(p.image)}" alt="" onerror="this.style.display='none'">`
+       : `<div class="photo"></div>`
+     }
+   </div>
+
+   <div class="interests">
+     <small>ИНТЕРЕСЫ</small>
+     <div>${esc(p.interests || "Не указаны")}</div>
+   </div>
+ </div>`;
 }
-function show(k,el){
- active=k;hovered=true;
- let group=people.filter(p=>key(p.date)===k);
- tooltip.innerHTML=(group.length>1?`<div class="duplicate">В этот день родились ${group.length} приколыша</div>`:"")+
- `<div class="people">${group.map(personHTML).join("")}</div>
- <button id="pin">${pinned.includes(k)?"Открепить":"Закрепить карточку"}</button>`;
- tooltip.classList.add("visible");
- document.getElementById("pin").onclick=()=>togglePin(k);
- let r=el.getBoundingClientRect();
- let w=tooltip.offsetWidth,h=tooltip.offsetHeight;
- tooltip.style.left=Math.max(8,Math.min(innerWidth-w-8,r.right+10))+"px";
- tooltip.style.top=Math.max(8,Math.min(innerHeight-h-8,r.top))+"px";
+
+
+let hoveredKey = null;
+
+// Формирование содержимого карточек
+function renderTooltip(el) {
+  const keys = [...pinned];
+  if (hoveredKey && !keys.includes(hoveredKey)) {
+    keys.push(hoveredKey);  }
+  if (!keys.length) {
+    tooltip.classList.remove("visible");
+    return;  }
+
+  tooltip.innerHTML = keys.map(k => {
+    const group = people.filter(p => key(p.date) === k);
+    return `
+      <div class="pinned-group">
+        ${group.length > 1
+          ? `<div class="duplicate">В этот день родились ${group.length} приколыша</div>`
+          : ""
+        }
+
+        <div class="people">
+          ${group.map(personHTML).join("")}
+        </div>
+
+        <button class="pin-button" data-key="${k}">
+          ${pinned.includes(k)
+            ? "Открепить карточку"
+            : "Закрепить карточку"
+          }
+        </button>
+      </div>
+    `;
+  }).join("");
+
+  tooltip.classList.add("visible");
+
+  // Обработчики закрепления
+  tooltip.querySelectorAll(".pin-button").forEach(button => {
+    button.onclick = () => togglePin(button.dataset.key);
+  });
+
+  // Позиционирование
+  if (el) {
+    const r = el.getBoundingClientRect();
+    const w = tooltip.offsetWidth;
+    const h = tooltip.offsetHeight;
+    tooltip.style.left =
+      Math.max(8, Math.min(innerWidth - w - 8, r.right + 10)) + "px";
+
+    tooltip.style.top =
+      Math.max(8, Math.min(innerHeight - h - 8, r.top)) + "px";
+  }
 }
-function togglePin(k){
- if(pinned.includes(k))pinned=pinned.filter(x=>x!==k);
- else if(pinned.length<2)pinned.push(k);
- show(k,markers.querySelector(`[cx="${point(people.find(p=>key(p.date)===k).date).x}"]`));
+
+// Показ карточки при наведении
+function show(k, el) {
+  hoveredKey = k;
+  active = k;
+  hovered = true;
+  renderTooltip(el);}
+
+// Закрепление и открепление
+function togglePin(k) {
+  if (pinned.includes(k)) {
+    pinned = pinned.filter(x => x !== k); } 
+  else {
+    if (pinned.length >= 2) {
+      return; }
+    pinned.push(k); }
+  renderTooltip();
 }
-tooltip.addEventListener("mouseenter",()=>hovered=true);
-tooltip.addEventListener("mouseleave",()=>{hovered=false;checkHide()});
-function checkHide(){
- if(!hovered&&active&&!pinned.includes(active)){
-  tooltip.classList.remove("visible");active=null;
- }
+
+// Наведение на карточку
+tooltip.addEventListener("mouseenter", () => {
+  hovered = true;});
+tooltip.addEventListener("mouseleave", () => {
+  hovered = false;
+  setTimeout(checkHide, 150);});
+
+// Скрытие подсказок
+function checkHide() {
+  if (hovered) return;
+  hoveredKey = null;
+  active = null;
+  if (pinned.length) {
+    renderTooltip();} 
+  else {
+    tooltip.classList.remove("visible");}
 }
+
 function timer(){
  if (!people.length) {
   document.getElementById("timer").textContent = "--";
