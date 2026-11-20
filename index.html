@@ -9,7 +9,7 @@
 body{margin:0;background:#161325;color:#e6e5f1;font:15px Arial,sans-serif}
 header{padding:18px 25px;border-bottom:1px solid #343044}
 h1{font-size:19px;font-weight:500;margin:0}
-#status{font-size:12px;color:#4f476e;margin-top:7px}
+#status{font-size:12px;color:#ac98fa;margin-top:7px}
 main{display:grid;place-items:center;padding:20px}
 .wheel{width:min(900px,96vw);position:relative;aspect-ratio:1;
     padding:18px;border-radius:50%;background:rgba(27, 22, 42, 0.19);
@@ -68,7 +68,7 @@ header {
   align-items: center;
   gap: 15px;
   position: relative;
-  background: rgba(25, 20, 37, 0.65);
+  background: rgba(25, 20, 37, 0.767);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(231, 220, 255, 0.15);
@@ -231,7 +231,7 @@ main {
 .season {
   fill: #b6aec8;
   font-size: 13px;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   pointer-events: none;
   text-anchor: middle;}
 
@@ -281,20 +281,23 @@ main {
 /* Точки */
 .marker {
   stroke: color-mix(in srgb, var(--marker-color), black 30%);
-  stroke-width: 2;
+  stroke-width: 3.5px;
   stroke-linejoin: round;
+  stroke-linecap: round;
   paint-order: stroke fill;
   shape-rendering: geometricPrecision;
   vector-effect: non-scaling-stroke;
-  transition: filter .2s ease, stroke .2s ease;
+  transition:
+    filter .2s ease,
+    stroke .2s ease,
+    stroke-width .2s ease;
 }
-
 .marker:hover {
   stroke: #fff;
-  stroke-width: 2.5;
+  stroke-width: 4px;
   filter:
     drop-shadow(0 0 3px var(--marker-color))
-    drop-shadow(0 0 9px var(--marker-color))
+    drop-shadow(0 0 8px var(--marker-color))
     drop-shadow(0 0 14px var(--marker-color));
 }
 
@@ -377,10 +380,10 @@ main {
 <circle cx="300" cy="300" r="245" fill="none" stroke="#303b48"/>
 <circle cx="300" cy="300" r="205" fill="none" stroke="#303b48"/>
 <g id="divisions"></g>
-<text class="season" x="300" y="48">ЗИМА</text>
-<text class="season" x="580" y="305">ОСЕНЬ</text>
-<text class="season" x="300" y="560">ЛЕТО</text>
-<text class="season" x="15" y="305">ВЕСНА</text>
+<text class="season" x="300" y="55">ЗИМА</text>
+<text class="season" x="300" y="555">ЛЕТО</text>
+<text class="season" x="65" y="305">ВЕСНА</text>
+<text class="season" x="535" y="305">ОСЕНЬ</text>
 <g id="markers"></g>
 </svg>
 <div class="center">
@@ -450,12 +453,16 @@ function parseDate(value, formatted) {
 }
 
 function valid(d){
- return d&&d.month>=1&&d.month<=12&&d.day>=1&&d.day<=new Date(2024,d.month,0).getDate();
+ return d&&d.month>=1&&d.month<=12&&d.day>=1&&d.day<=new Date(2025,d.month,0).getDate();
 }
 function key(d){return d.month+"-"+d.day}
-function angle(d){
- let n=(Date.UTC(2024,d.month-1,d.day)-Date.UTC(2024,0,1))/86400000;
- return -Math.PI/2-n/366*Math.PI*2;
+function angle(d) {
+  const yearStart = Date.UTC(2025, 0, 1);
+  const yearLength = 365;
+  const day = (
+    Date.UTC(2025, d.month - 1, d.day) - yearStart
+  ) / 86400000;
+  return -Math.PI / 2 - (day / yearLength) * Math.PI * 2;
 }
 function color(s){
  let h=0;
@@ -469,40 +476,34 @@ function point(d, radius = 225){
 }
 
 function draw(){
-    //деления колеса
- divisions.innerHTML="";
- for(let i=0;i<12;i++){
-  const middleDay = Math.floor(
-    (new Date(2024, i, 1).getTime() +
-     new Date(2024, i + 1, 1).getTime()) / 2
-  );
-  const yearStart = new Date(2024, 0, 1).getTime();
-  const yearLength =
-    new Date(2025, 0, 1).getTime() - yearStart;
-  const fraction = (middleDay - yearStart) / yearLength;
-  let a = -Math.PI / 2 - fraction * Math.PI * 2;
-  let l = document.createElementNS(NS, "line");
-  l.setAttribute("x1", 300 + 205 * Math.cos(a));
-  l.setAttribute("y1", 300 + 205 * Math.sin(a));
-  l.setAttribute("x2", 300 + 245 * Math.cos(a));
-  l.setAttribute("y2", 300 + 245 * Math.sin(a));
-  l.setAttribute("class", "line");
-  divisions.append(l);
- }
+ // Границы месяцев
+ for (let i = 0; i < 12; i++) {
+    const day = (
+        Date.UTC(2025, i, 1) -
+        Date.UTC(2025, 0, 1)
+    ) / 86400000;
+    const a = -Math.PI / 2 - (day / 365) * Math.PI * 2;
+    const l = document.createElementNS(NS, "line");
+    l.setAttribute("x1", 300 + 205 * Math.cos(a));
+    l.setAttribute("y1", 300 + 205 * Math.sin(a));
+    l.setAttribute("x2", 300 + 245 * Math.cos(a));
+    l.setAttribute("y2", 300 + 245 * Math.sin(a));
+    l.setAttribute("class", "line");
+    divisions.append(l);}
  
- markers.innerHTML="";
- let groups={};
- people.forEach(p=>(groups[key(p.date)]??=[]).push(p));
+    markers.innerHTML="";
+    let groups={};
+    people.forEach(p=>(groups[key(p.date)]??=[]).push(p));
 
- Object.entries(groups).forEach(([k,g])=>{
-// Сортируем даты по календарному порядку
-const entries = Object.entries(groups).sort((a, b) => {
-  const da = a[1][0].date;
-  const db = b[1][0].date;
-  return (
-    Date.UTC(2024, da.month - 1, da.day) -
-    Date.UTC(2024, db.month - 1, db.day)
-  );
+    Object.entries(groups).forEach(([k,g])=>{
+ // Сортируем даты по календарному порядку
+    const entries = Object.entries(groups).sort((a, b) => {
+    const da = a[1][0].date;
+    const db = b[1][0].date;
+    return (
+        Date.UTC(2025, da.month - 1, da.day) -
+        Date.UTC(2025, db.month - 1, db.day)
+    );
 });
 
 // Радиусы для близких дат
@@ -511,8 +512,8 @@ let cluster = [];
 let previousDay = null;
 function dayNumber(d) {
   return (
-    Date.UTC(2024, d.month - 1, d.day) -
-    Date.UTC(2024, 0, 1)
+    Date.UTC(2025, d.month - 1, d.day) -
+    Date.UTC(2025, 0, 1)
   ) / 86400000;
 }
 function drawCluster(items) {
