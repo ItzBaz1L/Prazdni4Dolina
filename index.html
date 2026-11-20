@@ -393,6 +393,18 @@ main {
 #tooltip.dragging {
   opacity: .92;
 }
+
+/*МАРКЕР ТЕКУЩЕЙ ДАТЫ*/
+.today-marker {
+  stroke: #eee5ff;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  opacity: .95;
+  filter: drop-shadow(0 0 3px #c5aaff)
+          drop-shadow(0 0 5px rgba(197,170,255,.65));
+  pointer-events: none;
+  vector-effect: non-scaling-stroke;
+}
 </style>
 </head>
 <body>
@@ -417,6 +429,7 @@ main {
 <circle cx="300" cy="300" r="245" fill="none" stroke="#303b48"/>
 <circle cx="300" cy="300" r="205" fill="none" stroke="#303b48"/>
 <g id="divisions"></g>
+<g id="todayMarker"></g>
 <text class="season" x="300" y="27">ЗИМА</text>
 <text class="season" x="300" y="579">ЛЕТО</text>
 <text class="season" x="27" y="305">ВЕСНА</text>
@@ -444,6 +457,7 @@ const NS="http://www.w3.org/2000/svg";
 const tooltip=document.getElementById("tooltip");
 const markers=document.getElementById("markers");
 const divisions=document.getElementById("divisions");
+const todayMarker = document.getElementById("todayMarker");
 
 //перетаскивание закреплённой карточки
 let tooltipDragging = false;
@@ -548,6 +562,37 @@ function color(s){
 function point(d, radius = 225){
  let a=angle(d);
  return {x:300+radius*Math.cos(a),y:300+radius*Math.sin(a)};
+}
+
+//ОТОБРАЖЕНИЕ ТЕКУЩЕЙ ДАТЫ
+function drawTodayMarker() {
+  const now = new Date();
+  //Точный номер дня с учётом времени суток
+  const yearStart = new Date(now.getFullYear(), 0, 1);
+  const yearLength = (
+    new Date(now.getFullYear() + 1, 0, 1) - yearStart
+  ) / 86400000;
+  const day = (
+    now - yearStart
+  ) / 86400000;
+  //Угол с учётом смещения календаря
+  const a = -Math.PI / 2 -
+    ((day - CALENDAR_SHIFT) / yearLength) * Math.PI * 2;
+  //Внутренняя и внешняя границы черты
+  const innerRadius = 205;
+  const outerRadius = 245;
+  const x1 = 300 + innerRadius * Math.cos(a);
+  const y1 = 300 + innerRadius * Math.sin(a);
+  const x2 = 300 + outerRadius * Math.cos(a);
+  const y2 = 300 + outerRadius * Math.sin(a);
+  todayMarker.innerHTML = "";
+  const line = document.createElementNS(NS, "line");
+  line.setAttribute("x1", x1);
+  line.setAttribute("y1", y1);
+  line.setAttribute("x2", x2);
+  line.setAttribute("y2", y2);
+  line.setAttribute("class", "today-marker");
+  todayMarker.appendChild(line);
 }
 
 function draw(){
@@ -1040,6 +1085,7 @@ load();
 
 setInterval(load, REFRESH);
 setInterval(timer, 1000);
+setInterval(drawTodayMarker, 1000);
 </script>
 </body>
 </html>
